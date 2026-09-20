@@ -90,6 +90,38 @@
             that person’s result. Keep them private. There is no recovery copy.
           </div>
 
+          <div class="integrity-card" aria-label="Draw integrity check">
+            <div class="integrity-heading">
+              <span class="check-mark" aria-hidden="true">✓</span>
+              <div>
+                <h3>Integrity check passed</h3>
+                <p>Verified before the private links were encrypted.</p>
+              </div>
+            </div>
+            <dl class="integrity-grid">
+              <div>
+                <dt>Participants</dt>
+                <dd id="check-participants">—</dd>
+              </div>
+              <div>
+                <dt>Unique recipients</dt>
+                <dd id="check-recipients">—</dd>
+              </div>
+              <div>
+                <dt>Self-matches</dt>
+                <dd id="check-self-matches">—</dd>
+              </div>
+              <div>
+                <dt>Complete circle</dt>
+                <dd id="check-circle">—</dd>
+              </div>
+            </dl>
+            <p class="integrity-explanation">
+              Everyone gives to exactly one person and is selected exactly once.
+              The assignments stay hidden.
+            </p>
+          </div>
+
           <div id="link-list" class="link-list"></div>
 
           <div class="results-actions">

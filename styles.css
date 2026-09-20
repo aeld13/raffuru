@@ -327,6 +327,73 @@ textarea:focus {
   color: var(--gold);
 }
 
+.integrity-card {
+  margin: 0 0 1.5rem;
+  padding: 1.15rem;
+  border: 1px solid rgba(168, 242, 202, 0.25);
+  border-radius: 1rem;
+  background: rgba(168, 242, 202, 0.055);
+}
+
+.integrity-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.integrity-heading h3 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+}
+
+.integrity-heading p,
+.integrity-explanation {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.check-mark {
+  display: grid;
+  flex: 0 0 auto;
+  width: 2.1rem;
+  height: 2.1rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--mint);
+  color: var(--mint-ink);
+  font-weight: 900;
+}
+
+.integrity-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+
+.integrity-grid div {
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: rgba(4, 10, 24, 0.34);
+}
+
+.integrity-grid dt {
+  min-height: 2.4em;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.integrity-grid dd {
+  margin: 0.35rem 0 0;
+  color: var(--mint);
+  font-size: 1.25rem;
+  font-weight: 820;
+}
+
 .link-list {
   display: grid;
   gap: 0.7rem;
@@ -539,6 +606,10 @@ textarea:focus {
 
   .secondary-button {
     width: 100%;
+  }
+
+  .integrity-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .participant-view {

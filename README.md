@@ -38,11 +38,17 @@ The generator makes exactly one cycle containing everyone, so nobody draws
 themselves, each participant draws exactly one person, and each participant is
 drawn exactly once.
 
+After generation, the organizer screen independently checks and displays the
+participant count, number of unique recipients, number of self-matches, and whether
+all assignments form one complete circle. It confirms those properties without
+showing the assignments.
+
 ## Security model
 
 - The draw is generated locally with the browser's cryptographically secure random
   number generator.
-- Each assignment is encrypted separately with AES-256-GCM.
+- Each assignment is encrypted separately with AES-128-GCM. A fresh random 128-bit
+  key is generated for every link and used exactly once.
 - The decryption key lives after `#` in the participant URL. URL fragments are not
   sent to GitHub Pages by the browser.
 - The published files contain no names, assignments, links, or keys.

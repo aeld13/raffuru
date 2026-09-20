@@ -63,6 +63,35 @@
     return shuffled;
   }
 
+  function verifyCircle(circle) {
+    const assignments = new Map(
+      circle.map((giver, index) => [giver, circle[(index + 1) % circle.length]])
+    );
+    const uniqueRecipients = new Set(assignments.values()).size;
+    const selfMatches = [...assignments].filter(([giver, recipient]) => giver === recipient).length;
+    const visited = new Set();
+    let current = circle[0];
+    for (let i = 0; i < circle.length; i += 1) {
+      if (visited.has(current)) break;
+      visited.add(current);
+      current = assignments.get(current);
+    }
+    const completeCircle = visited.size === circle.length && current === circle[0];
+    const passed =
+      assignments.size === circle.length &&
+      uniqueRecipients === circle.length &&
+      selfMatches === 0 &&
+      completeCircle;
+
+    return {
+      participants: circle.length,
+      uniqueRecipients,
+      selfMatches,
+      completeCircle,
+      passed,
+    };
+  }
+
   function bytesToBase64Url(bytes) {
     let binary = "";
     for (let i = 0; i < bytes.length; i += 1) {
@@ -80,20 +109,21 @@
 
   async function createPrivateLink(payload) {
     const key = await crypto.subtle.generateKey(
-      { name: "AES-GCM", length: 256 },
+      { name: "AES-GCM", length: 128 },
       true,
       ["encrypt", "decrypt"]
     );
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const cleartext = encoder.encode(JSON.stringify(payload));
+    // Every link receives a new random key, so a fixed IV is never reused with a key.
+    // Omitting a transmitted IV makes the static private links substantially shorter.
+    const iv = new Uint8Array(12);
+    const cleartext = encoder.encode(JSON.stringify([payload.from, payload.to, payload.event]));
     const ciphertext = new Uint8Array(
       await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, cleartext)
     );
     const rawKey = new Uint8Array(await crypto.subtle.exportKey("raw", key));
     const baseUrl = `${location.origin}${location.pathname}${location.search}`;
     const fragment = [
-      "sc1",
-      bytesToBase64Url(iv),
+      "sc2",
       bytesToBase64Url(rawKey),
       bytesToBase64Url(ciphertext),
     ].join(".");
@@ -102,16 +132,23 @@
 
   async function decryptFragment(fragment) {
     const parts = fragment.replace(/^#/, "").split(".");
-    if (parts.length !== 4 || parts[0] !== "sc1") throw new Error("Invalid link");
-    const iv = base64UrlToBytes(parts[1]);
-    const rawKey = base64UrlToBytes(parts[2]);
-    const ciphertext = base64UrlToBytes(parts[3]);
-    if (iv.length !== 12 || rawKey.length !== 32 || ciphertext.length < 17) {
+    const legacy = parts[0] === "sc1" && parts.length === 4;
+    const compact = parts[0] === "sc2" && parts.length === 3;
+    if (!legacy && !compact) throw new Error("Invalid link");
+
+    const iv = legacy ? base64UrlToBytes(parts[1]) : new Uint8Array(12);
+    const rawKey = base64UrlToBytes(parts[legacy ? 2 : 1]);
+    const ciphertext = base64UrlToBytes(parts[legacy ? 3 : 2]);
+    const expectedKeyLength = legacy ? 32 : 16;
+    if (iv.length !== 12 || rawKey.length !== expectedKeyLength || ciphertext.length < 17) {
       throw new Error("Invalid link data");
     }
     const key = await crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
     const cleartext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
-    const payload = JSON.parse(decoder.decode(cleartext));
+    const decoded = JSON.parse(decoder.decode(cleartext));
+    const payload = compact
+      ? { v: 1, from: decoded[0], to: decoded[1], event: decoded[2] || "" }
+      : decoded;
     if (
       !payload ||
       payload.v !== 1 ||
@@ -175,6 +212,13 @@
     }
   }
 
+  function renderIntegrity(check) {
+    $("#check-participants").textContent = String(check.participants);
+    $("#check-recipients").textContent = String(check.uniqueRecipients);
+    $("#check-self-matches").textContent = String(check.selfMatches);
+    $("#check-circle").textContent = check.completeCircle ? "Yes" : "No";
+  }
+
   function showError(message) {
     formError.textContent = message;
     formError.hidden = false;
@@ -208,6 +252,8 @@
 
     try {
       const circle = secureShuffle(names);
+      const integrity = verifyCircle(circle);
+      if (!integrity.passed) throw new Error("Draw integrity check failed");
       const eventName = eventInput.value.trim();
       const nextLinks = await Promise.all(
         circle.map(async (from, index) => {
@@ -221,6 +267,7 @@
         a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
       );
       generatedLinks.splice(0, generatedLinks.length, ...nextLinks);
+      renderIntegrity(integrity);
       renderLinks();
       results.hidden = false;
       results.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -297,7 +344,7 @@
     namesInput.focus();
   });
 
-  if (location.hash.startsWith("#sc1.")) {
+  if (location.hash.startsWith("#sc1.") || location.hash.startsWith("#sc2.")) {
     openParticipantView();
   } else {
     updateNameCount();
