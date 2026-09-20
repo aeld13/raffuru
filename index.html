@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111b34" />
+    <meta
+      name="description"
+      content="Create a private, single-cycle gift draw using only static GitHub Pages."
+    />
+    <title>Secret Circle</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="brand" aria-label="Secret Circle">
+        <span class="brand-mark" aria-hidden="true">SC</span>
+        <span>Secret Circle</span>
+      </header>
+
+      <section id="organizer-view" class="view" aria-labelledby="organizer-title">
+        <div class="intro">
+          <p class="eyebrow">Private gift draw</p>
+          <h1 id="organizer-title">Make the circle.<br />Share one link each.</h1>
+          <p class="lede">
+            Enter everyone once. This browser creates a single loop so nobody draws
+            themselves, then gives you one private reveal link per person.
+          </p>
+        </div>
+
+        <div class="workspace-card">
+          <form id="draw-form" novalidate>
+            <label for="event-name">Circle name <span>optional</span></label>
+            <input
+              id="event-name"
+              name="eventName"
+              type="text"
+              maxlength="80"
+              placeholder="Winter gift exchange"
+              autocomplete="off"
+            />
+
+            <div class="label-row">
+              <label for="names">Participant names</label>
+              <span id="name-count" aria-live="polite">0 people</span>
+            </div>
+            <textarea
+              id="names"
+              name="names"
+              rows="9"
+              placeholder="Alice&#10;Bob&#10;Carol&#10;Dave"
+              aria-describedby="names-help form-error"
+              required
+            ></textarea>
+            <p id="names-help" class="field-help">One name per line. Minimum two.</p>
+            <p id="form-error" class="error" role="alert" hidden></p>
+
+            <button class="primary-button" type="submit">
+              <span>Create private links</span>
+              <span aria-hidden="true">↗</span>
+            </button>
+          </form>
+
+          <aside class="privacy-note">
+            <div class="note-icon" aria-hidden="true">#</div>
+            <div>
+              <h2>Nothing is uploaded</h2>
+              <p>
+                The draw happens on this device. Each link contains one encrypted
+                result after the <code>#</code>, which browsers do not send to GitHub.
+              </p>
+            </div>
+          </aside>
+        </div>
+
+        <section id="results" class="results" aria-labelledby="results-title" hidden>
+          <div class="results-heading">
+            <div>
+              <p class="eyebrow">Draw ready</p>
+              <h2 id="results-title">Send each person their link</h2>
+            </div>
+            <button id="download-links" class="secondary-button" type="button">
+              Download CSV
+            </button>
+          </div>
+
+          <div class="important-note">
+            <strong>These links are the keys.</strong> Anyone with a link can reveal
+            that person’s result. Keep them private. There is no recovery copy.
+          </div>
+
+          <div id="link-list" class="link-list"></div>
+
+          <div class="results-actions">
+            <button id="copy-all" class="primary-button compact" type="button">
+              Copy all links
+            </button>
+            <button id="start-over" class="text-button" type="button">Start over</button>
+          </div>
+        </section>
+      </section>
+
+      <section id="participant-view" class="view participant-view" aria-live="polite" hidden>
+        <div class="reveal-card">
+          <p id="reveal-event" class="eyebrow">Secret Circle</p>
+          <div id="sealed-state">
+            <div class="seal" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <p class="welcome">Private link for</p>
+            <h1 id="participant-name">Someone</h1>
+            <p class="reveal-copy">Ready to see who you’re giving to?</p>
+            <button id="reveal-button" class="primary-button reveal-button" type="button">
+              Reveal my person
+            </button>
+          </div>
+
+          <div id="revealed-state" class="revealed" hidden>
+            <p class="welcome">You’re giving to</p>
+            <h1 id="assignment-name"></h1>
+            <p class="reveal-copy">Keep it quiet. The circle depends on you.</p>
+          </div>
+
+          <div id="invalid-state" hidden>
+            <p class="eyebrow">Link problem</p>
+            <h1>This private link doesn’t work.</h1>
+            <p class="reveal-copy">
+              Ask the organizer to copy and send your link again in full.
+            </p>
+          </div>
+        </div>
+        <p class="participant-footnote">Your result is decrypted only in this browser.</p>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>
